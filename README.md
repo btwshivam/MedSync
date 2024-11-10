@@ -57,7 +57,7 @@
 ### Deployment 🚀
    - Render
    - Netlify
-   - Other Tools 🔧
+### Other Tools 🔧
    -  Git & GitHub
    - Postman
    - ESLint & Prettier
