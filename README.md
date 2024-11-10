@@ -1,4 +1,4 @@
-# 🏥✨ MedSync - Smart Hospital Management System ✨🏥
+# 🏥✨MedSync - Smart Hospital Management System✨🏥
 
 **🚀 Revolutionizing Healthcare - Your all-in-one solution for managing OPD queues, real-time bed tracking, and inventory management.**
 <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="900">
