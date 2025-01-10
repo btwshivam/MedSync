@@ -39,6 +39,13 @@
 ### 🌍 6. City-Wide Integration
 - Data Sharing Across Hospitals: Centralized data sharing for a cohesive city-wide health management system.
 - Scalable Architecture: Designed to scale across multiple hospitals and medical facilities in a city.
+
+### 🤖 7. AI chatbot Integration
+- Real-Time Healthcare Information**: The chatbot offers up-to-date details on nearby hospitals and clinics, including specialties, contact information, operating hours, and locations.  
+
+- Seamless Appointment Booking**: Users can schedule online consultations or in-person visits by viewing and selecting available time slots with instant confirmation.  
+
+- Bed and Slot Availability**: The integration provides real-time updates on hospital bed availability and clinic appointment slots for better decision-making during emergencies or planned visits.
 <img src="https://user-images.githubusercontent.com/74038190/212284100-561aa473-3905-4a80-b561-0d28506553ee.gif" width="900">
 
 
