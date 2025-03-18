@@ -1,0 +1,385 @@
+.form-container {
+  margin-top: 120px;
+  padding: 2rem 6rem 4rem;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+.form-container::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  left: -50px;
+  width: 60%;
+  height: 63%;
+  background: linear-gradient(
+    45deg,
+    #ABCFFC,
+  );
+  transform: rotate(0deg);
+
+  pointer-events: none;
+}
+.dark .form-container::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  left: -50px;
+  width: 60%;
+  height: 65%;
+  background: linear-gradient(
+    45deg,
+    #525356,
+  );
+  transform: rotate(0deg);
+  pointer-events: none;
+}
+
+.dark .form-container {
+  background-color: #111827;
+  color: #f1f1f1;
+  box-shadow: 0 6px 16px rgba(255, 255, 255, 0.1);
+}
+
+h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.dark h2 {
+  color: #666;
+}
+
+.opd-registration-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 3rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #666;
+  font-size: 1.1rem;
+  transition: color 0.3s ease;
+}
+
+.dark label {
+  color: #666;
+}
+
+input[type='text'],
+input[type='number'],
+input[type='tel'],
+input[type='email'],
+input[type='password'],
+select,
+textarea,
+input[type='file'] {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: #f9f9f9;
+
+  transition:
+    border-color 0.3s ease,
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+.dark input[type='text'],
+.dark input[type='number'],
+.dark input[type='tel'],
+.dark input[type='email'],
+.dark input[type='password'],
+.dark select,
+.dark textarea,
+.dark input[type='file'] {
+  background-color: #444;
+  color: #f1f1f1;
+  border-color: #666;
+}
+
+input[type='date'] {
+  width: 100%;
+}
+
+.form-textarea,
+.form-buttons {
+  grid-column-start: 1;
+  grid-column-end: 3;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+.dark input:focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: #1e90ff;
+  box-shadow: 0 0 5px rgba(30, 144, 255, 0.5);
+}
+
+textarea {
+  height: 120px;
+  resize: vertical;
+}
+
+input[type='file'] {
+  padding: 5px 0;
+}
+
+.submit-btn {
+  background-color: #007bff;
+  color: #fff;
+  padding: 12px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 40%;
+  align-self: center;
+  transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+  background-color: #0056b3;
+}
+
+.submit-btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.dark .submit-btn {
+  background-color: #1e90ff;
+}
+
+.back-button {
+  display: block;
+  text-align: center;
+  margin-top: 20px;
+  font-size: 1rem;
+  color: #007bff;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.back-button:hover {
+  color: #0056b3;
+}
+
+.dark .back-button {
+  color: #1e90ff;
+}
+
+.dark .back-button:hover {
+  color: #104e8b;
+}
+
+/* Error Message Styling */
+.error {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .form-container {
+    padding: 20px;
+  }
+
+  .opd-registration-form {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+
+  .form-textarea,
+  .form-buttons {
+    grid-column: 1 / -1;
+  }
+
+  .submit-btn {
+    padding: 10px;
+    font-size: 0.9rem;
+  }
+
+  .back-button {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-container {
+    padding: 15px;
+  }
+  .opd-registration-form {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+
+  .form-textarea,
+  .form-buttons {
+    grid-column: 1 / -1;
+  }
+
+  .submit-btn {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+
+  .back-button {
+    font-size: 0.85rem;
+  }
+}
+
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.submit-btn {
+  margin-bottom: 15px;
+}
+
+.back-home-container {
+  text-align: center;
+}
+
+.back-btn {
+  text-decoration: none;
+  color: #007bff;
+  font-size: 16px;
+}
+
+.dark .back-btn {
+  color: #1e90ff;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+.dark .modal-content {
+  background-color: #444;
+  color: #f1f1f1;
+}
+
+.modal-content ul {
+  list-style: none;
+  padding: 0;
+}
+
+.modal-content button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.dark .modal-content button {
+  background-color: #1e90ff;
+}
+
+/* Styling the download icon */
+.download-icon {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+.download-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+.OpdHeader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image {
+  width: 70px;
+}
+
+.OPDText {
+  font-weight: 700;
+  font-size: larger;
+}
+
+.dark .OPDText {
+  color: #f1f1f1;
+}
+
+/* Dark mode date picker styling */
+input[type='date'].input-dark {
+  background-color: #333;
+  color: #fff;
+  border: 1px solid #ccc;
+}
+
+/* Light mode date picker styling */
+input[type='date'] {
+  background-color: #fff;
+  color: #000;
+  border: 1px solid #ccc;
+}
+
+.MuiBox-root {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+.css-0{
+  flex-direction: row;
+}
