@@ -10,7 +10,6 @@ import {
 } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6'; // Corrected import for Twitter icon
 import GoogleTranslate from './GoogleTranslate';
-import Chatbot from '../Medical-Chatbot/Chatbot';
 import { X, MessageCircle } from 'lucide-react';
 // import { FaArrowUp } from 'react-icons/fa';
   
@@ -341,7 +340,6 @@ const Footer = () => {
         <div
           className={`fixed bottom-4 right-6 flex flex-col gap-3 duration-300 delay-300 ${!showScrollTop && 'translate-y-[75px]'}`}
         >
-          <Chatbot isOpen={isOpen} setIsOpen={setIsOpen} />
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="bg-blue-600 hover:shadow-inner:bg-blue-500 text-white p-3 rounded-full shadow-lg  transition-colors"

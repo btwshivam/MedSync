@@ -9,7 +9,6 @@ import LabTestMedipedia from '../pages/LabTest';
 import BlogPage from '../pages/Blog';
 import BlogDetailsPage from '../pages/BlogDetailsPage';
 import HospitalsAround from '../pages/HospitalsAround';
-import Chatbot from '../Medical-Chatbot/Chatbot';
 import Footer from './Footer';
 import ProfilePage from '../pages/Profile';
 import AboutPage from '../pages/About';
@@ -104,13 +103,11 @@ function Layout() {
 
         </Routes>
       </div>
-      <Chatbot />
       {/* Conditionally render Footer */}
       {showNavAndFooter && <Footer />}
       {!showNavAndFooter && (
         // chat bot it now in footer, if the footer does not shown, then chat bot will render standalone
         <div className="fixed bottom-4 right-6 flex flex-col gap-3">
-          <Chatbot />
         </div>
       )}
     </>
