@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { UserContext } from '../store/userContext';
 import '../styles/UserProfile.css';
 import { databaseUrls } from '../data/databaseUrls';
-import { FaUser, FaEdit, FaCalendarAlt, FaUserMd, FaPlus, FaPhone } from 'react-icons/fa';
+import { FaUser, FaEdit, FaCalendarAlt, FaUserMd, FaPlus, FaPhone, FaClock } from 'react-icons/fa';
 import { MdEmail, MdLocationOn } from 'react-icons/md';
 
 const ProfilePage = () => {
@@ -11,8 +11,14 @@ const ProfilePage = () => {
   const [isEditing, setIsEditing] = useState(false); // To toggle the modal visibility
   const [editData, setEditData] = useState({}); // For storing the editable data
   const [isAddingDoctor, setIsAddingDoctor] = useState(false); // To toggle the Add doctor modal visibility
-  const [doctorData, setDoctorData] = useState({}); // For storing the new doctor data
+  const [doctorData, setDoctorData] = useState({
+    name: '',
+    department: '',
+    phone: '',
+    opdSchedule: {}
+  }); // For storing the new doctor data
   const [isLoading, setIsLoading] = useState(true);
+  const [formError, setFormError] = useState('');
   const days = [
     'monday',
     'tuesday',
@@ -21,6 +27,17 @@ const ProfilePage = () => {
     'friday',
     'saturday',
     'sunday',
+  ];
+  
+  // Time slots for the schedule picker
+  const timeSlots = [
+    '8:00 AM - 10:00 AM',
+    '10:00 AM - 12:00 PM',
+    '12:00 PM - 2:00 PM',
+    '2:00 PM - 4:00 PM',
+    '4:00 PM - 6:00 PM',
+    '6:00 PM - 8:00 PM',
+    'Not Available'
   ];
 
   useEffect(() => {
@@ -87,19 +104,25 @@ const ProfilePage = () => {
   const handleDoctorDataChange = (e) => {
     const { name, value } = e.target;
     setDoctorData((prev) => ({ ...prev, [name]: value }));
+    // Clear any previous error when user starts typing
+    setFormError('');
   };
 
-  const handleDoctorScheduleDataChange = (e) => {
-    var { name, value } = e.target;
-    const day = name.split('-')[0];
-    if (value === ' ') {
-      value = '';
-    }
-
+  const handleDoctorScheduleDataChange = (day, value) => {
     setDoctorData((prevData) => {
-      const prevSchedule = prevData.opdSchedule ? prevData.opdSchedule : {};
-      prevSchedule[day] = value;
-      return { ...prevData, opdSchedule: prevSchedule };
+      const updatedSchedule = { ...prevData.opdSchedule };
+      
+      // If "Not Available" is selected, set the value to null
+      if (value === 'Not Available') {
+        updatedSchedule[day] = null;
+      } else {
+        updatedSchedule[day] = value;
+      }
+      
+      return { 
+        ...prevData, 
+        opdSchedule: updatedSchedule 
+      };
     });
   };
 
@@ -131,13 +154,44 @@ const ProfilePage = () => {
     }
   };
 
+  const validateDoctorData = () => {
+    if (!doctorData.name.trim()) {
+      setFormError('Doctor name is required');
+      return false;
+    }
+    
+    if (!doctorData.department.trim()) {
+      setFormError('Department is required');
+      return false;
+    }
+    
+    if (!doctorData.phone.trim()) {
+      setFormError('Phone number is required');
+      return false;
+    }
+    
+    // Check if at least one day has a schedule
+    const hasSchedule = Object.values(doctorData.opdSchedule).some(val => val !== null && val !== undefined);
+    if (!hasSchedule) {
+      setFormError('Please set schedule for at least one day');
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleConfirmAddDoctor = async () => {
+    if (!validateDoctorData()) {
+      return;
+    }
+    
     try {
       setIsLoading(true);
       const postData = {
-        id: userData.id,
+        id: userData._id,
         doctor: doctorData,
       };
+      
       const response = await fetch(databaseUrls.auth.addDoctor, {
         method: 'POST',
         headers: {
@@ -146,16 +200,26 @@ const ProfilePage = () => {
         },
         body: JSON.stringify(postData),
       });
+      
       if (response.ok) {
         const updatedData = await response.json();
         setUserData(updatedData); // Update the local state with the edited data
         setIsAddingDoctor(false); // Close the modal
-        setDoctorData({}); // Reset doctor data
+        // Reset doctor data
+        setDoctorData({
+          name: '',
+          department: '',
+          phone: '',
+          opdSchedule: {}
+        });
+        setFormError('');
       } else {
-        console.error('Failed to add new doctor');
+        const errorData = await response.json();
+        setFormError(errorData.msg || 'Failed to add new doctor');
       }
     } catch (error) {
       console.error('Error adding new doctor:', error);
+      setFormError('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -167,7 +231,14 @@ const ProfilePage = () => {
 
   const handleCancelAddDoctor = () => {
     setIsAddingDoctor(false); // Close the modal without saving changes
-    setDoctorData({}); // Reset doctor data
+    // Reset doctor data
+    setDoctorData({
+      name: '',
+      department: '',
+      phone: '',
+      opdSchedule: {}
+    });
+    setFormError('');
   };
 
   // Get first letter of name for avatar
@@ -182,6 +253,31 @@ const ProfilePage = () => {
     if (status === 'pending') return 'status-badge status-pending';
     if (status === 'cancelled') return 'status-badge status-cancelled';
     return 'status-badge';
+  };
+
+  // Format availability display
+  const formatAvailability = (opdSchedule) => {
+    if (!opdSchedule || Object.keys(opdSchedule).length === 0) {
+      return 'No schedule available';
+    }
+    
+    const availableDays = Object.entries(opdSchedule)
+      .filter(([day, time]) => time !== null && time !== undefined && time !== '')
+      .map(([day, time]) => ({
+        day: capitalizeFirstLetter(day),
+        time
+      }));
+    
+    if (availableDays.length === 0) {
+      return 'No schedule available';
+    }
+    
+    return availableDays.map(({ day, time }) => (
+      <div key={day} className="availability-slot">
+        <span className="day">{day}: </span>
+        <span className="time">{time}</span>
+      </div>
+    ));
   };
 
   return (
@@ -204,57 +300,57 @@ const ProfilePage = () => {
             <h3 className="profile-name">{userData.name}</h3>
             <p className="profile-role">{isHospital ? 'Healthcare Provider' : 'Patient'}</p>
             
-            <div className="mt-4">
+            <div className="contact-info">
               <p><MdEmail /> {userData.email}</p>
               <p><FaPhone /> {userData.phone || 'No phone number'}</p>
               {isHospital && userData.address && (
                 <p><MdLocationOn /> {`${userData.address?.city || ''}, ${userData.address?.state || ''}`}</p>
               )}
             </div>
-          </div>
+        </div>
 
-          {/* User Information */}
-          <div className="user-info">
+        {/* User Information */}
+        <div className="user-info">
             <h3>Personal Information</h3>
             
             <div className="info-grid">
-              {isHospital ? (
-                <>
-                  <p>
+          {isHospital ? (
+            <>
+              <p>
                     <strong>Full Address</strong>
-                    {`${userData.address?.street || 'N/A'}, ${
-                      userData.address?.city || 'N/A'
-                    }, ${userData.address?.state || 'N/A'}`}
-                  </p>
-                  <p>
+                {`${userData.address?.street || 'N/A'}, ${
+                  userData.address?.city || 'N/A'
+                }, ${userData.address?.state || 'N/A'}`}
+              </p>
+              <p>
                     <strong>Rating</strong>
                     {userData.ratings || 'N/A'}/5
-                  </p>
-                  <p>
+              </p>
+              <p>
                     <strong>Departments</strong>
-                    {userData.departments.join(', ') || 'N/A'}
-                  </p>
-                  <p>
+                {userData.departments.join(', ') || 'N/A'}
+              </p>
+              <p>
                     <strong>Available Services</strong>
-                    {userData.availableServices.join(', ') || 'N/A'}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p>
+                {userData.availableServices.join(', ') || 'N/A'}
+              </p>
+            </>
+          ) : (
+            <>
+              <p>
                     <strong>Date of Birth</strong>
-                    {new Date(userData.dob).toLocaleDateString() || 'N/A'}
-                  </p>
-                  <p>
+                {new Date(userData.dob).toLocaleDateString() || 'N/A'}
+              </p>
+              <p>
                     <strong>Gender</strong>
                     {userData.gender || 'N/A'}
-                  </p>
-                  <p>
+              </p>
+              <p>
                     <strong>Medical History</strong>
-                    {userData.medicalHistory?.join(', ') || 'None'}
-                  </p>
-                </>
-              )}
+                {userData.medicalHistory?.join(', ') || 'None'}
+              </p>
+            </>
+          )}
             </div>
           </div>
         </div>
@@ -264,7 +360,7 @@ const ProfilePage = () => {
           <h3>
             <FaCalendarAlt /> Appointments
           </h3>
-          {userData.appointments.length === 0 ? (
+          {!userData.appointments || userData.appointments.length === 0 ? (
             <p>No appointments scheduled.</p>
           ) : (
             <table>
@@ -315,42 +411,26 @@ const ProfilePage = () => {
           </div>
           
           {!userData.doctors || userData.doctors.length === 0 ? (
-            <p>No doctors added.</p>
+            <p>No doctors added yet. Click "Add Doctor" to add your first doctor.</p>
           ) : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Department</th>
-                  <th>Phone</th>
-                  <th>Availability</th>
-                </tr>
-              </thead>
-              <tbody>
+            <div className="doctors-grid">
                 {userData.doctors.map((doctor) => (
-                  <tr key={doctor._id}>
-                    <td>{doctor.name}</td>
-                    <td>{doctor.department}</td>
-                    <td>{doctor.phone}</td>
-                    <td>
-                      {doctor.opdSchedule &&
-                      Object.values(doctor.opdSchedule).some(
-                        (value) => value !== null,
-                      ) ? (
-                        <p>
-                          {Object.keys(doctor.opdSchedule)
-                            .filter((day) => doctor.opdSchedule[day] !== null)
-                            .map((day) => capitalizeFirstLetter(day))
-                            .join(', ')}
-                        </p>
-                      ) : (
-                        'N/A'
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                <div key={doctor._id} className="doctor-card">
+                  <div className="doctor-avatar">
+                    {getInitial(doctor.name)}
+        </div>
+                  <h4 className="doctor-name">{doctor.name}</h4>
+                  <p className="doctor-department">{doctor.department}</p>
+                  <p className="doctor-phone"><FaPhone /> {doctor.phone}</p>
+                  <div className="doctor-schedule">
+                    <h5><FaClock /> Availability</h5>
+                    <div className="schedule-slots">
+                      {formatAvailability(doctor.opdSchedule)}
+            </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
         </div>
       </div>
@@ -396,33 +476,33 @@ const ProfilePage = () => {
 
             {!isHospital && (
               <>
-                <div className="form-group">
+            <div className="form-group">
                   <label>Date of Birth</label>
-                  <input
-                    type="date"
-                    name="dob"
-                    value={
-                      editData.dob
-                        ? new Date(editData.dob).toISOString().substr(0, 10)
-                        : ''
-                    }
-                    onChange={handleChange}
-                  />
-                </div>
+              <input
+                type="date"
+                name="dob"
+                value={
+                  editData.dob
+                    ? new Date(editData.dob).toISOString().substr(0, 10)
+                    : ''
+                }
+                onChange={handleChange}
+              />
+            </div>
                 
-                <div className="form-group">
+            <div className="form-group">
                   <label>Gender</label>
-                  <select
-                    name="gender"
-                    value={editData.gender}
-                    onChange={handleChange}
-                  >
-                    <option value="N/A">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
+              <select
+                name="gender"
+                value={editData.gender}
+                onChange={handleChange}
+              >
+                <option value="N/A">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
               </>
             )}
             
@@ -483,7 +563,7 @@ const ProfilePage = () => {
                 </div>
               </>
             )}
-            
+
             <div className="modal-actions">
               <button onClick={handleCancelEdit}>Cancel</button>
               <button onClick={handleConfirmEdit}>Save Changes</button>
@@ -498,61 +578,86 @@ const ProfilePage = () => {
           <div className="modal-content">
             <h3>Add New Doctor</h3>
             
+            {formError && <div className="form-error">{formError}</div>}
+            
             <div className="form-group">
-              <label>Doctor Name</label>
+              <label>Doctor Name <span className="required">*</span></label>
               <input
                 type="text"
                 name="name"
                 value={doctorData.name || ''}
                 onChange={handleDoctorDataChange}
                 placeholder="Enter doctor's name"
+                required
               />
             </div>
             
             <div className="form-group">
-              <label>Department</label>
-              <input
-                type="text"
+              <label>Department <span className="required">*</span></label>
+              <select
                 name="department"
                 value={doctorData.department || ''}
                 onChange={handleDoctorDataChange}
-                placeholder="Enter doctor's department"
-              />
+                required
+              >
+                <option value="">Select Department</option>
+                <option value="Cardiology">Cardiology</option>
+                <option value="Neurology">Neurology</option>
+                <option value="Orthopedics">Orthopedics</option>
+                <option value="Pediatrics">Pediatrics</option>
+                <option value="Gynecology">Gynecology</option>
+                <option value="Dermatology">Dermatology</option>
+                <option value="ENT">ENT</option>
+                <option value="Ophthalmology">Ophthalmology</option>
+                <option value="Dentistry">Dentistry</option>
+                <option value="General Medicine">General Medicine</option>
+              </select>
             </div>
             
             <div className="form-group">
-              <label>Phone Number</label>
+              <label>Phone Number <span className="required">*</span></label>
               <input
                 type="text"
                 name="phone"
                 value={doctorData.phone || ''}
                 onChange={handleDoctorDataChange}
                 placeholder="Enter doctor's phone number"
+                required
               />
             </div>
             
-            <h4 style={{ marginTop: '1.5rem', marginBottom: '1rem' }}>OPD Schedule</h4>
-            
-            {days.map((day) => (
-              <div className="form-group" key={day}>
-                <label>{capitalizeFirstLetter(day)}</label>
-                <input
-                  type="text"
-                  name={`${day}-schedule`}
-                  value={
-                    doctorData.opdSchedule && doctorData.opdSchedule[day]
-                      ? doctorData.opdSchedule[day]
-                      : ''
-                  }
-                  onChange={handleDoctorScheduleDataChange}
-                  placeholder="e.g. 9:00 AM - 5:00 PM"
-                />
+            <div className="form-section">
+              <h4 className="section-title">
+                <FaClock /> OPD Schedule <span className="hint">(Select at least one day)</span>
+              </h4>
+              
+              <div className="schedule-grid">
+                {days.map((day) => (
+                  <div className="form-group" key={day}>
+                    <label>{capitalizeFirstLetter(day)}</label>
+                    <select
+                      value={doctorData.opdSchedule[day] || 'Not Available'}
+                      onChange={(e) => handleDoctorScheduleDataChange(day, e.target.value)}
+                    >
+                      {timeSlots.map((slot) => (
+                        <option key={`${day}-${slot}`} value={slot === 'Not Available' ? 'Not Available' : slot}>
+                          {slot}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
             
             <div className="modal-actions">
               <button onClick={handleCancelAddDoctor}>Cancel</button>
-              <button onClick={handleConfirmAddDoctor}>Add Doctor</button>
+              <button 
+                onClick={handleConfirmAddDoctor}
+                className="save-btn"
+              >
+                Add Doctor
+              </button>
             </div>
           </div>
         </div>
